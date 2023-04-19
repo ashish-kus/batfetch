@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 
 BF_COL1=2
 BF_COL2=7
@@ -66,14 +67,14 @@ get_model(){
 }
 
 get_charge(){
-  charge="$(cat /sys/class/power_supply/BAT0/capacity)%"
-  Energy_now="$(cat /sys/class/power_supply/BAT0/energy_now)"
-  Draw="$(cat /sys/class/power_supply/BAT0/power_now)"
+  charge="$(cat /sys/class/power_supply/BAT*/capacity)%"
+  Energy_now="$(cat /sys/class/power_supply/BAT*/energy_now)"
+  Draw="$(cat /sys/class/power_supply/BAT*/power_now)"
   log "charge" "$charge $TIME"
 }
 
 get_power(){
-  powerDraw="$(($(cat /sys/class/power_supply/BAT0/power_now)/1000000))W"
+  powerDraw="$(($(cat /sys/class/power_supply/BAT*/power_now)/1000000))W"
   governer="$(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor)"
   log "power" "$powerDraw $governer"
 }
@@ -85,13 +86,13 @@ get_state(){
   else
     powerInput="not connected"
   fi
-  status="$(cat /sys/class/power_supply/BAT0/status)"
+  status="$(cat /sys/class/power_supply/BAT*/status)"
   log "state" "$powerInput & $status"
 }
 
 get_health(){
-   health=$(($(cat /sys/class/power_supply/BAT0/energy_full) * 100 / $(cat /sys/class/power_supply/BAT0/energy_full_design)))
-   cycle=$(cat /sys/class/power_supply/BAT0/cycle_count)
+   health=$(($(cat /sys/class/power_supply/BAT*/energy_full) * 100 / $(cat /sys/class/power_supply/BAT*/energy_full_design)))
+   cycle=$(cat /sys/class/power_supply/BAT*/cycle_count)
    log "health" "$health% |  cycles $cycle"
 }
 
