@@ -10,18 +10,12 @@ Open your terminal and just run the command ``` batfetch```.
 
 ## # Installation:
 1. Clone the project
-```
- https://github.com/ashish-kus/batfetch 
- ```
- 2. Make file executable
- ```
- cd batfetch && chmod +x batfetch
- ```
- 3. Make batfetch available in path variable
- ```
- sudo cp ./batfetch /usr/bin/
- ```
- 4. Test the project 
+ ``` https://github.com/ashish-kus/batfetch ```
+2. Make file executable
+ ``` cd batfetch && chmod +x batfetch ```
+3. Make batfetch available in path variable
+ ``` sudo cp ./batfetch /usr/bin/ ```
+4. Test the project 
  ``` exec shell && batfetch```
 
 ## # LICENCE
