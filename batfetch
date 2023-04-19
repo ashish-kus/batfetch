@@ -1,0 +1,241 @@
+
+# BF_COL1=2
+# BF_COL2=7
+# BF_COL3=6
+
+
+
+log(){
+
+    # Do nothig if info field is empty.
+    [ "$2" ] || return
+
+    # Store the value of '$1' as we reset the argument list below.
+    name=$1
+    
+    # Use 'set --' as a means of stripping all leading and trailing
+    # white-space from the info string. This also normalizes all
+    # white-space inside of the string.
+    #
+    # Disable the shellcheck warning for word-splitting
+    # as it's safe and intended ('set -f' disables globbing).
+    {
+        set -f
+        set +f -- $2
+        info=$*
+    }
+
+    # Move the courcer toward right to print name and info right
+    # of the ascii with an aditional gap using BF_GAP = variable. 
+    printf '[%sC' "$(( $ascii_width + ${BF_GAP:-4}))"
+
+    # Print the info name with color
+    printf '[3%s;1m%s[m' "${BF_COL1:-2}" "$name"
+
+    # Move courcer backword at starting of info name and then move
+    # it forward ( max-info-name + extra gap ) to alogn all information.
+    printf '[%sD[%sC' "${#name}" "${PF_INFOALIGN:-$(($info_length + 1))}"
+
+    # Print the information striping all the extra spaces.
+    printf '[3%sm%s[m\n' "${BF_COL2:-7}" "$info"
+
+    # Incriment whenever log is called to keep track of lenfo info_height 
+    # so that correctely align the the prompet. 
+    info_height=$((${info_height:-0} + 1))
+}
+
+# This function gets the title of the current user and host and prints it out using the log function.
+get_title() {
+
+    # Get the current user. If the USER environment variable is not set, use the result of the id -un command.
+    user=${USER:-$(id -un)}
+
+    # Get the hostname. If the HOSTNAME environment variable is not set, use the output of the hostname command.
+    # If the hostname command fails, use the hostname variable if it is set.
+    hostname=${HOSTNAME:-${hostname:-$(hostname)}}
+
+    # Use the log function to print the user and hostname in the format "[user]@[hostname]".
+    # The BF_COL3 variable is used to set the color of the text (in this case, the color code is 1).
+    # If BF_COL3 is not set, use the default color (code 7).
+    log "[3${BF_COL3:-1}m${user}${c7}@[3${BF_COL3:-1}m${hostname}" " "
+} 
+
+# This function gets the model information of the battery and prints it out using the log function.
+get_model(){
+
+  # Get the manufacturer of the battery by reading the contents of the manufacturer file in the power_supply directory.
+  # The * wildcard is used to match any battery that may be present in the system.
+  vandor=$(cat /sys/class/power_supply/BAT*/manufacturer)
+
+  # Get the model name of the battery by reading the contents of the model_name file in the power_supply directory.
+  # The * wildcard is used to match any battery that may be present in the system.
+  model=$(cat /sys/class/power_supply/BAT*/model_name)
+
+  # Use the log function to print the model information in the format "model [manufacturer] [model name]".
+  # The first argument is the string "model" and the second argument is the concatenation of the variables $vandor and $model.
+  log "model" "$vandor $model"
+}
+
+# This function gets the battery charge information
+get_charge(){
+
+  # Reads the current battery capacity and stores it in the variable 'charge'
+  charge="$(cat /sys/class/power_supply/BAT0/capacity)%"
+
+  # Reads the current energy level of the battery and stores it in the variable 'Energy_now'
+  Energy_now="$(cat /sys/class/power_supply/BAT0/energy_now)"
+
+  # Reads the current power draw of the battery and stores it in the variable 'Draw'
+  Draw="$(cat /sys/class/power_supply/BAT0/power_now)"
+
+  # Logs the current battery charge along with the current time
+  log "charge" "$charge $TIME"
+}
+
+
+# This function gets the current power information of the system
+get_power(){
+
+  # Reads the current power draw of the battery and converts it to watts, then stores it in the variable 'powerDraw'
+  powerDraw="$(($(cat /sys/class/power_supply/BAT0/power_now)/1000000))W"
+
+  # Reads the current scaling governor of the CPU and stores it in the variable 'governer'
+  governer="$(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor)"
+
+  # Logs the current power information along with the current governor using the `log` function 
+  log "power" "$powerDraw $governer"
+}
+
+# This function gets the current power state of the system
+get_state(){
+
+  # Reads whether the AC power is connected or not and stores it in the variable 'online'
+  online=$(cat /sys/class/power_supply/AC/online)
+
+  # Checks if the AC power is connected or not, and assigns the string "connected" or "not connected" to the variable 'powerInput' accordingly
+  if [[ $online -eq 1 ]]; then
+     powerInput="connected"
+  else
+    powerInput="not connected"
+  fi
+
+  # Reads the current status of the battery (e.g., charging, discharging, full) and stores it in the variable 'status'
+  status="$(cat /sys/class/power_supply/BAT0/status)"
+  log "state" "$powerInput & $status"
+}
+
+# This function gets the current battery health information
+get_health(){
+
+  # Calculates the current battery health percentage by dividing the current energy level by the energy full design and multiplying it by 100
+  health=$(($(cat /sys/class/power_supply/BAT0/energy_full) * 100 / $(cat /sys/class/power_supply/BAT0/energy_full_design)))
+
+  # Reads the current cycle count of the battery and stores it in the variable 'cycle'
+  cycle=$(cat /sys/class/power_supply/BAT0/cycle_count)
+
+  # Logs the current battery health percentage and cycle count using the `log` function 
+  log "health" "$health% |  cycles $cycle"
+}
+
+
+# This function generates an ASCII art battery indicator based on the current battery percentage and power status
+get_ascii(){
+
+  # Reads the current battery percentage from /sys/class/power_supply/BAT*/capacity and stores it in the variable '_charge'
+  _charge=$(cat /sys/class/power_supply/BAT*/capacity)
+
+  # Sets the variable 'var1' to a string that represents the battery percentage in an ASCII art format
+  # If the battery is fully charged (100%), it sets 'var1' to "█   FULL  █", otherwise it sets it to "█   $_charge%   █"
+  if [[ $_charge == 100 ]]; then
+     var1="█   FULL  █"
+  else
+    var1="█   $_charge%   █"
+  fi
+
+  # Reads the power status from /sys/class/power_supply/AC/online and stores it in the variable 'online'
+  online=${online:-$(cat /sys/class/power_supply/AC/online)}
+
+  # Sets the variable 'var2' to a string that represents the power status in an ASCII art format
+  # If the power is connected (online=1), it sets 'var2' to "🗲", otherwise it sets it to a space character
+  if [[ $online -eq 1 ]]; then
+     var2=${var2:-"🗲"}
+  else
+     var2=${var2:-" "}
+  fi
+
+  # Prints the ASCII art battery indicator using the 'cat' command and a 'here document'
+cat << EOF
+  🬭🬭🬭█████🬭🬭🬭
+  █         █
+  █         █
+  $var1
+  █         █
+  █    $var2    █
+  █         █
+  🮂🮂🮂🮂🮂🮂🮂🮂🮂🮂🮂
+EOF
+
+  # Sets the variables 'ascii_width' and 'ascii_height' to the width and height of the ASCII art battery indicator, respectively
+  ascii_width=11
+  ascii_height=7
+
+  # The following lines are commented out and appear to be unused, but may have been part of a previous version of the code
+  # BF_COL1=${BF_COL1:-${1:-7}}
+  # BF_COL3=${BF_COL2:-$((${1:-7}%8+1))}
+  
+
+  # Move the courcer top about the height of the ascii art.
+  printf '[m[%sA' "$ascii_height"
+}
+
+
+main(){
+   
+    # Generic color list.
+    # Disable warning about unused variables.
+    # shellcheck disable=2034
+    {
+        c1='[31m'; c2='[32m'
+        c3='[33m'; c4='[34m'
+        c5='[35m'; c6='[36m'
+        c7='[37m'; c8='[38m'
+    }
+
+   BF_COL1=${BF_COL1:-${1:-7}}
+   BF_COL3=${BF_COL2:-$((${1:-7}%8+1))}
+
+        # Disable globbing and set the positional parameters 
+        set -f
+        set +f ascii title model charge power state health  
+
+        # Iterate over the info functions to determine the lengths of the
+        # "info names" for output alignment. The option names and subtitles
+        # match 1:1 so this is thankfully simple
+        for info; do
+            command -v "get_$info" >/dev/null || continue
+
+        # This was a ternary operation but they aren't supported in
+        # Minix's shell.
+        [ "${#info}" -gt "${info_length:-0}" ] &&
+           info_length=${#info}
+        done
+
+       # Add an additional space of length to act as a gap.
+       info_length=$((info_length + 1 ))
+
+      # Iterate over the above list and run any existing "get_" functions.
+      for info; do "get_$info"; done
+
+    # This was a ternary operation but they aren't supported in Minix's shell.
+    [ "${info_height:-0}" -lt "${ascii_height:-0}" ] &&
+        cursor_pos=$((ascii_height - info_height - 1 ))
+        
+    # Move courcer downword after printing all the information
+    # to position prompt correctly
+    while [ "${i:=0}" -le "${cursor_pos:-0}" ]; do 
+      printf '\n' 
+      i=$((i + 1))
+    done
+  }
+  echo ""
+main "$@"
