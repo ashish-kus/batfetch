@@ -10,23 +10,32 @@ Open your terminal and just run the command ``` batfetch```.
 
 ## # Installation:
 
-For instalation on Arch linux use:
-``` yay -S batfetch ```
+AUR:
+```
+yay -S batfetch
+```
 
 For manual instalation:
 
 1. Clone the project
+ ```
+ git clone https://github.com/ashish-kus/batfetch 
+ ```
 
- ```  git clone https://github.com/ashish-kus/batfetch ```
 2. Make file executable
+ ``` 
+cd batfetch && chmod +x batfetch
+```
 
- ```   cd batfetch && chmod +x batfetch ```
 3. Make batfetch available in path variable
+```
+sudo cp ./batfetch /usr/bin/ 
+```
 
- ``` sudo cp ./batfetch /usr/bin/ ```
 4. Test the project 
-
- ``` exec shell && batfetch```
+```
+exec shell && batfetch
+```
 
 ## # LICENCE
 
