@@ -80,7 +80,10 @@ get_power(){
 }
 
 get_state(){
-  online=$(cat /sys/class/power_supply/AC*/online):- $(cat /sys/class/power_supply/AC*/state)
+  # online=$(${$(cat /sys/class/power_supply/AC*/online)}:- ${$(cat /sys/class/power_supply/AC*/state)})
+  online=$(cat /sys/class/power_supply/A*/online)
+# online= [ -f /sys/class/power_supply/AC*/online ] && cat /sys/class/power_supply/AC*/online \
+#         ||  [ -f /sys/class/power_supply/A*/state ] && cat next.txt
   if [[ $online -eq 1 ]]; then
      powerInput="connected"
   else
