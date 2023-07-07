@@ -20,22 +20,13 @@ For manual instalation:
 1. Clone the project
  ```
  git clone https://github.com/ashish-kus/batfetch 
- ```
 
-2. Make file executable
- ``` 
-cd batfetch && chmod +x batfetch
-```
+ cd batfetch && chmod +x batfetch
 
-3. Make batfetch available in path variable
-```
-sudo cp ./batfetch /usr/bin/ 
+ ./install.sh
+
 ```
 
-4. Test the project 
-```
-exec shell && batfetch
-```
 
 ## # LICENCE
 
