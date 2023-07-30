@@ -10,25 +10,28 @@ Open your terminal and just run the command ``` batfetch```.
 
 ## # Installation:
 
-AUR:
+#### AUR:
 ```
 yay -S batfetch
 ```
+## For manual instalation:
 
-For manual instalation:
-
-1. Clone the project
- ```
- git clone https://github.com/ashish-kus/batfetch 
-
- cd batfetch && chmod +x batfetch
-
- ./install.sh
-
+#### To install run  
+```
+    git clone https://github.com/ashish-kus/batfetch 
+    cd batfetch
+    sudo make install 
+```
+#### To uninstall run  
+```
+    git clone https://github.com/ashish-kus/batfetch 
+    cd batfetch
+    sudo make uninstall 
 ```
 
 
-## # LICENCE
+
+#### # LICENCE
 
 <center>
 	GNU GENERAL PUBLIC LICENCE
