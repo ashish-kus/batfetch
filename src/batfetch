@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 
-BF_COL1=2
-BF_COL2=7
-BF_COL3=6
+
+BF_COL1=${BF_COL1:-2}
+BF_COL2=${BF_COL2:-7}
+BF_COL3=${BF_COL2:-6}
 
 
 
@@ -29,21 +30,87 @@ log(){
     # Move the courcer toward right to print name and info right
     # of the ascii with an aditional gap using BF_GAP = variable. 
     printf '[%sC' "$(( $ascii_width + ${BF_GAP:-4}))"
+    # printf '[%sC' "$(( $ascii_width + ${BF_GAP:-4}))"
 
     # Print the info name with color
-    printf '[3%s;1m%s[m' "${BF_COL1:-2}" "$name"
+    # printf '[3%s;1m%s[m' "${BF_COL1:-2}" "$name"
+    printf '[3%s;1m%s[m' "${BF_COL1}" "$name"
 
     # Move courcer backword at starting of info name and then move
     # it forward ( max-info-name + extra gap ) to alogn all information.
     printf '[%sD[%sC' "${#name}" "${PF_INFOALIGN:-$(($info_length + 1))}"
 
     # Print the information striping all the extra spaces.
-    printf '[3%sm%s[m\n' "${BF_COL2:-7}" "$info"
+    printf '[3%sm%s[m\n' "${BF_COL2}" "$info"
+    # printf '[3%sm%s[m\n' "${BF_COL2:-7}" "$info"
 
     # Incriment whenever log is called to keep track of lenfo info_height 
     # so that correctely align the the prompet. 
     info_height=$((${info_height:-0} + 1))
 }
+
+# batfetch default config.
+read -rd '' config <<'EOF'
+# Config file defining color variables BF_COL1, BF_COL2, and BF_COL3
+
+# Generic color list.
+# Disable warning about unused variables.
+# shellcheck disable=2034
+{
+    c1='[31m'; c2='[32m'
+    c3='[33m'; c4='[34m'
+    c5='[35m'; c6='[36m'
+    c7='[37m'; c8='[38m'
+}
+
+#                            BF_COL1
+#  🬭🬭🬭█████🬭🬭🬭               /
+#  █         █  ashishk@nandu
+#  █         █  model   LGC 5B10W138
+#  █   97%   █  charge  97% AC pluged
+#  █         █  power   0W performance
+#  █    🗲    █  state   connected & Not charging
+#  █         █  health  80% | cycles 772
+#  🮂🮂🮂🮂🮂🮂🮂🮂🮂🮂🮂   |                      \
+#              BF_COL3                   BF_COL2  
+# 
+
+
+# BF_COL1: possible value 1/2/3/4/5/6/7/8
+# Default = 2
+# BF_COL1=2
+
+# BF_COL2: possible value 1/2/3/4/5/6/7/8
+# Default = 7
+# BF_COL2=7
+
+# BF_COL3: possible value 1/2/3/4/5/6/7/8
+# Default = 6
+# BF_COL3=6
+EOF
+
+load_config(){
+  
+    if [[ -f "${XDG_CONFIG_HOME}/batfetch/config.conf" ]]; then
+        config_path="${XDG_CONFIG_HOME}/batfetch/config.conf"
+        source "${XDG_CONFIG_HOME}/batfetch/config.conf"
+
+    elif [[ -f "${XDG_CONFIG_HOME}/batfetch/config" ]]; then
+        config_path="${XDG_CONFIG_HOME}/batfetch/config"
+        source "${XDG_CONFIG_HOME}/batfetch/config"
+
+    else 
+        config_file="${XDG_CONFIG_HOME}/batfetch/config.conf"
+
+        # The config file doesn't exist, create it.
+        mkdir -p "${XDG_CONFIG_HOME}/batfetch/"
+        printf '%s\n' "$config" > "$config_file"
+    fi 
+}
+
+
+
+
 # This function gets the title of the current user and host and prints it out using the log function.
 get_title() {
 
@@ -70,12 +137,18 @@ get_charge(){
   charge="$(cat /sys/class/power_supply/BAT*/capacity)%"
   Energy_now="$(cat /sys/class/power_supply/BAT*/energy_now)"
   Draw="$(cat /sys/class/power_supply/BAT*/power_now)"
-  time=$(echo "scale=4; $Energy_now / $Draw" | bc)
-  hours=${time%.*}
-  decimal_part=$(echo "$time" | cut -d '.' -f 2)
-  minutes=$((decimal_part * 60 / 10000))
-  TIME="${hours}h ${minutes}m"
-  log "charge" "$charge $TIME"
+
+  if [ $Draw = 0 ]; then
+      ESTIMATION="AC pluged "
+      echo "000000" > nan
+  else
+      time=$(echo "scale=4; $Energy_now / $Draw" | bc)
+      hours=${time%.*}
+      decimal_part=$(echo "$time" | cut -d '.' -f 2)
+      minutes=$((decimal_part * 60 / 10000))
+      ESTIMATION="${hours}h ${minutes}m"
+  fi
+  log "charge" "$charge $ESTIMATION"
 }
 
 get_power(){
@@ -136,45 +209,99 @@ EOF
    printf '[m[%sA' "$ascii_height"
 }
 
+# batfetch default config.
+read -rd '' config <<'EOF'
+# Config file defining color variables BF_COL1, BF_COL2, and BF_COL3
+
+# Generic color list.
+# Disable warning about unused variables.
+# shellcheck disable=2034
+{
+    c1='[31m'; c2='[32m'
+    c3='[33m'; c4='[34m'
+    c5='[35m'; c6='[36m'
+    c7='[37m'; c8='[38m'
+}
+
+#                            BF_COL1
+#  🬭🬭🬭█████🬭🬭🬭               /
+#  █         █  ashishk@nandu
+#  █         █  model   LGC 5B10W138
+#  █   97%   █  charge  97% AC pluged
+#  █         █  power   0W performance
+#  █    🗲    █  state   connected & Not charging
+#  █         █  health  80% | cycles 772
+#  🮂🮂🮂🮂🮂🮂🮂🮂🮂🮂🮂   |                      \
+#              BF_COL3                   BF_COL2  
+# 
+
+
+# BF_COL1: possible value 1/2/3/4/5/6/7/8
+# Default = 2
+# BF_COL1=2
+
+# BF_COL2: possible value 1/2/3/4/5/6/7/8
+# Default = 7
+# BF_COL2=7
+
+# BF_COL3: possible value 1/2/3/4/5/6/7/8
+# Default = 6
+# BF_COL3=6
+EOF
+
+load_config(){
+  
+    if [[ -f "${XDG_CONFIG_HOME}/batfetch/config.conf" ]]; then
+        config_path="${XDG_CONFIG_HOME}/batfetch/config.conf"
+        source "${XDG_CONFIG_HOME}/batfetch/config.conf"
+        return
+
+    elif [[ -f "${XDG_CONFIG_HOME}/batfetch/config" ]]; then
+        config_path="${XDG_CONFIG_HOME}/batfetch/config"
+        source "${XDG_CONFIG_HOME}/batfetch/config"
+        return
+
+    elif [[ -z "$config_path" ]]; then
+        config_file="${XDG_CONFIG_HOME}/batfetch/config.conf"
+
+        # The config file doesn't exist, create it.
+        mkdir -p "${XDG_CONFIG_HOME}/batfetch/"
+        printf '%s\n' "$config" > "$config_file"
+    fi 
+}
+
+
 main(){
     
     # Hide 'stderr' unless the first argument is '-v'. This saves
     # polluting the script with '2>/dev/null'.
     [ "$1" = -v ] || exec 2>/dev/null
 
-    # Generic color list.
-    # Disable warning about unused variables.
-    # shellcheck disable=2034
-    {
-        c1='[31m'; c2='[32m'
-        c3='[33m'; c4='[34m'
-        c5='[35m'; c6='[36m'
-        c7='[37m'; c8='[38m'
-    }
 
-   BF_COL1=${BF_COL1:-${1:-7}}
-   BF_COL3=${BF_COL2:-$((${1:-7}%8+1))}
+   load_config
+  
+  # Disable globbing and set the positional parameters 
+  set -f
+  set +f ascii title model charge power state health  
 
-        # Disable globbing and set the positional parameters 
-        set -f
-        set +f ascii title model charge power state health  
 
-        # Iterate over the info functions to determine the lengths of the
-        # "info names" for output alignment. The option names and subtitles
-        # match 1:1 so this is thankfully simple
-        for info; do
-            command -v "get_$info" >/dev/null || continue
-        # This was a ternary operation but they aren't supported in
-        # Minix's shell.
-        [ "${#info}" -gt "${info_length:-0}" ] &&
-           info_length=${#info}
-        done
 
-       # Add an additional space of length to act as a gap.
-       info_length=$((info_length + 1 ))
+  # Iterate over the info functions to determine the lengths of the
+  # "info names" for output alignment. The option names and subtitles
+  # match 1:1 so this is thankfully simple
+  for info; do
+      command -v "get_$info" >/dev/null || continue
+  # This was a ternary operation but they aren't supported in
+  # Minix's shell.
+  [ "${#info}" -gt "${info_length:-0}" ] &&
+     info_length=${#info}
+  done
 
-      # Iterate over the above list and run any existing "get_" functions.
-      for info; do "get_$info"; done
+  # Add an additional space of length to act as a gap.
+  info_length=$((info_length + 1 ))
+
+  # Iterate over the above list and run any existing "get_" functions.
+  for info; do "get_$info"; done
 
     # This was a ternary operation but they aren't supported in Minix's shell.
     [ "${info_height:-0}" -lt "${ascii_height:-0}" ] &&
