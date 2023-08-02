@@ -1,12 +1,5 @@
 #!/usr/bin/env bash
 
-
-BF_COL1=${BF_COL1:-2}
-BF_COL2=${BF_COL2:-7}
-BF_COL3=${BF_COL2:-6}
-
-
-
 log(){
 
     # Do nothig if info field is empty.
@@ -124,7 +117,7 @@ get_title() {
     # Use the log function to print the user and hostname in the format "[user]@[hostname]".
     # The BF_COL3 variable is used to set the color of the text (in this case, the color code is 1).
     # If BF_COL3 is not set, use the default color (code 7).
-    log "[3${BF_COL3:-1}m${user}${c7}@[3${BF_COL3:-1}m${hostname}" " "
+    log "[3${BF_COL3:-1}m${user}${c8}@[3${BF_COL3:-1}m${hostname}" " "
 } 
 
 get_model(){
@@ -140,7 +133,6 @@ get_charge(){
 
   if [ $Draw = 0 ]; then
       ESTIMATION="AC pluged "
-      echo "000000" > nan
   else
       time=$(echo "scale=4; $Energy_now / $Draw" | bc)
       hours=${time%.*}
@@ -217,14 +209,14 @@ read -rd '' config <<'EOF'
 # Disable warning about unused variables.
 # shellcheck disable=2034
 {
-    c1='[31m'; c2='[32m'
-    c3='[33m'; c4='[34m'
-    c5='[35m'; c6='[36m'
-    c7='[37m'; c8='[38m'
+    c1='[31m'; c2='[32m'
+    c3='[33m'; c4='[34m'
+    c5='[35m'; c6='[36m'
+    c7='[37m'; c8='[38m'
 }
 
-#                            BF_COL1
-#  🬭🬭🬭█████🬭🬭🬭               /
+#                BF_COL4     BF_COL1
+#  🬭🬭🬭█████🬭🬭🬭        \      /
 #  █         █  ashishk@nandu
 #  █         █  model   LGC 5B10W138
 #  █   97%   █  charge  97% AC pluged
@@ -235,6 +227,12 @@ read -rd '' config <<'EOF'
 #              BF_COL3                   BF_COL2  
 # 
 
+# [COLOR]
+# Manage your output's color
+#
+# COLOR: possible values true/false
+# Default = true
+COLOR=true
 
 # BF_COL1: possible value 1/2/3/4/5/6/7/8
 # Default = 2
@@ -270,6 +268,21 @@ load_config(){
     fi 
 }
 
+load_colors(){
+
+  COLOR=${COLOR:-true}
+
+  if [[ $COLOR = true ]]; then
+      BF_COL1=${BF_COL1:-2}
+      BF_COL2=${BF_COL2:-7}
+      BF_COL3=${BF_COL2:-6}
+  else
+      BF_COL1=8
+      BF_COL2=8
+      BF_COL3=8
+  fi
+}
+
 
 main(){
     
@@ -279,6 +292,8 @@ main(){
 
 
    load_config
+   
+   load_colors
   
   # Disable globbing and set the positional parameters 
   set -f
