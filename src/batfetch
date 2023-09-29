@@ -176,7 +176,7 @@ get_ascii(){
   else
     var1="█   $_charge%   █"
   fi  
-  online=${online:-$(cat /sys/class/power_supply/AC/online)}
+  online=${online:-$(cat /sys/class/power_supply/A*/online)}
     if [[ $online -eq 1 ]]; then
        var2=${var2:-"🗲"}
     else
