@@ -4,9 +4,29 @@ BatFetch is a command-line tool that displays detailed information about the bat
 It provides information about the battery model, current charge level, power state, and health status. The tool also displays an ASCII art title that adds a touch of fun to the output.
 
 ##  # Usage:
-Open your terminal and just run the command ``` batfetch```.
-![batfetch preview](./preview/preview-batfetch.png)
+#### Basic usage:
+``` batfetch```.
 
+#### JSON Output:
+To obtain detailed information in JSON format, use the -j or --json flag. 
+Note that this feature requires the installation of jq on your system.
+```
+batfetch -j
+# or
+batfetch --json
+```
+Make sure to install jq for the JSON output functionality:
+
+*On arch based systems*
+```yay -S jq```
+
+*On Debian-based systems*
+```sudo apt-get install jq```
+
+*On Red Hat-based systems*
+```sudo yum install jq```
+
+![batfetch preview](./preview/preview-batfetch.png)
 
 ## # Installation:
 
