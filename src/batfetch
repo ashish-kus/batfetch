@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-
+JSON_OUTPUT=false
 log(){
 
     # Do nothig if info field is empty.
@@ -20,6 +20,10 @@ log(){
         info=$*
     }
 
+    if [ "$JSON_OUTPUT" = true ]; then
+      echo "$info"
+      return
+    fi
     # Move the courcer toward right to print name and info right
     # of the ascii with an aditional gap using BF_GAP = variable. 
     printf '[%sC' "$(( $ascii_width + ${BF_GAP:-4}))"
@@ -106,10 +110,8 @@ load_config(){
 
 # This function gets the title of the current user and host and prints it out using the log function.
 get_title() {
-
     # Get the current user. If the USER environment variable is not set, use the result of the id -un command.
     user=${USER:-$(id -un)}
-
     # Get the hostname. If the HOSTNAME environment variable is not set, use the output of the hostname command.
     # If the hostname command fails, use the hostname variable if it is set.
     hostname=${HOSTNAME:-${hostname:-$(hostname)}}
@@ -117,7 +119,11 @@ get_title() {
     # Use the log function to print the user and hostname in the format "[user]@[hostname]".
     # The BF_COL3 variable is used to set the color of the text (in this case, the color code is 1).
     # If BF_COL3 is not set, use the default color (code 7).
-    log "[3${BF_COL3:-1}m${user}${c8}@[3${BF_COL3:-1}m${hostname}" " "
+    if [ $JSON_OUTPUT == true ]; then 
+      log " " "$user@$hostname"
+    else
+      log "[3${BF_COL3:-1}m${user}${c8}@[3${BF_COL3:-1}m${hostname}" " "
+    fi
 } 
 
 get_model(){
@@ -282,35 +288,84 @@ load_colors(){
       BF_COL3=8
   fi
 }
+get_json(){
 
+# shellcheck disable=SC2016
+JSON_FORMAT=$(jq \
+--null-input \
+--arg title        "$(get_title)" \
+--arg model        "$(get_model)" \
+--arg charge       "$(get_charge)" \
+--arg power        "$(get_power)" \
+--arg state        "$(get_state)" \
+--arg health       "$(get_health)" \
+'{ "title": $title, "model": $model, "charge": $charge, "power": $power, "state": $state, "health": $health }' \
+)
+
+printf '%s' "$JSON_FORMAT"
+}
 
 main(){
     
-    # Hide 'stderr' unless the first argument is '-v'. This saves
-    # polluting the script with '2>/dev/null'.
-    [ "$1" = -v ] || exec 2>/dev/null
+  load_config
+  load_colors
 
-
-   load_config
-   
-   load_colors
-  
+  # Hide 'stderr' unless the first argument is '-v'. This saves
+  # polluting the script with '2>/dev/null'.
+  # [ "$1" = -v ] || exec 2>/dev/null
+  # while [ "$#" -gt 0 ]; do
+  #     case "$1" in
+  #         -v|--verbose)
+  #             exec 2>/dev/null
+  #             ;;
+  #         -j|--json)
+  #             JSON_OUTPUT=true
+  #             ;;
+  #     esac
+  #     shift
+  # done 
   # Disable globbing and set the positional parameters 
+  while [ "$#" -gt 0 ]; do
+    case "$1" in
+      -v|--verbose)
+        # Hide 'stderr' if the argument is '-v'
+        exec 2>/dev/null
+        ;;
+      -j|--json)
+        # Execute get_json function if the argument is '-j' or '--json'
+        JSON_OUTPUT=true
+        get_json
+        exit  # Exit after executing get_json
+        ;;
+    esac
+    shift
+  done
+
   set -f
   set +f ascii title model charge power state health  
-
-
 
   # Iterate over the info functions to determine the lengths of the
   # "info names" for output alignment. The option names and subtitles
   # match 1:1 so this is thankfully simple
   for info; do
       command -v "get_$info" >/dev/null || continue
-  # This was a ternary operation but they aren't supported in
-  # Minix's shell.
-  [ "${#info}" -gt "${info_length:-0}" ] &&
-     info_length=${#info}
+      # This was a ternary operation but they aren't supported in
+      # Minix's shell.
+      [ "${#info}" -gt "${info_length:-0}" ] &&  info_length=${#info}
   done
+  # for info; do
+  #     case "$info" in
+  #         -j|--json)
+  #             json_output=true
+  #             ;;
+  #         *)
+  #             command -v "get_$info" >/dev/null || continue
+  #             [ "${#info}" -gt "${info_length:-0}" ] &&
+  #                 info_length=${#info}
+  #             ;;
+  #     esac
+  # done
+
 
   # Add an additional space of length to act as a gap.
   info_length=$((info_length + 1 ))
