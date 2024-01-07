@@ -290,19 +290,22 @@ load_colors(){
 }
 get_json(){
 
-# shellcheck disable=SC2016
-JSON_FORMAT=$(jq \
---null-input \
---arg title        "$(get_title)" \
---arg model        "$(get_model)" \
---arg charge       "$(get_charge)" \
---arg power        "$(get_power)" \
---arg state        "$(get_state)" \
---arg health       "$(get_health)" \
-'{ "title": $title, "model": $model, "charge": $charge, "power": $power, "state": $state, "health": $health }' \
-)
-
-printf '%s' "$JSON_FORMAT"
+  if ! hash jq 2>/dev/null; then
+    echo "jq package not installed, kindly install jq"
+  else
+    # shellcheck disable=SC2016
+    JSON_FORMAT=$(jq \
+    --null-input \
+    --arg title        "$(get_title)" \
+    --arg model        "$(get_model)" \
+    --arg charge       "$(get_charge)" \
+    --arg power        "$(get_power)" \
+    --arg state        "$(get_state)" \
+    --arg health       "$(get_health)" \
+    '{ "title": $title, "model": $model, "charge": $charge, "power": $power, "state": $state, "health": $health }' \
+    )
+    printf '%s' "$JSON_FORMAT"
+  fi
 }
 
 main(){
@@ -384,5 +387,4 @@ main(){
       i=$((i + 1))
     done
   }
-  echo ""
 main "$@"
