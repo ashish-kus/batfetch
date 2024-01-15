@@ -253,25 +253,25 @@ COLOR=true
 # BF_COL3=6
 EOF
 
-load_config(){
-  
-    if [[ -f "${XDG_CONFIG_HOME}/batfetch/config.conf" ]]; then
+load_config() {
+    local config_path
+
+    if [[ -n "$XDG_CONFIG_HOME" ]]; then
         config_path="${XDG_CONFIG_HOME}/batfetch/config.conf"
-        source "${XDG_CONFIG_HOME}/batfetch/config.conf"
-        return
+    elif [[ -d "$HOME/.config" ]]; then
+        config_path="$HOME/.config/batfetch/config.conf"
+    else
+        config_path="$HOME/.batfetch/config.conf"
+    fi
 
-    elif [[ -f "${XDG_CONFIG_HOME}/batfetch/config" ]]; then
-        config_path="${XDG_CONFIG_HOME}/batfetch/config"
-        source "${XDG_CONFIG_HOME}/batfetch/config"
-        return
-
-    elif [[ -z "$config_path" ]]; then
-        config_file="${XDG_CONFIG_HOME}/batfetch/config.conf"
-
+    if [[ -f "$config_path" ]]; then
+        source "$config_path"
+    else
         # The config file doesn't exist, create it.
-        mkdir -p "${XDG_CONFIG_HOME}/batfetch/"
-        printf '%s\n' "$config" > "$config_file"
-    fi 
+        mkdir -p "$(dirname "$config_path")"
+        printf '%s\n' "$config" > "$config_path"
+        source "$config_path"
+    fi
 }
 
 load_colors(){

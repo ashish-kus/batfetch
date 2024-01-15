@@ -1,6 +1,7 @@
 <div align="center">
 
 A super tiny battery information fetch script written in BASH
+
 <a href='#'><img src="https://img.shields.io/badge/Shell_Script-121011?logo=gnu-bash&logoColor=white"></img><a/>
 <a href='#'><img src="https://img.shields.io/badge/Made%20with-Bash-1f425f.svg"></img><a/>
 <a href='#'><img src=https://img.shields.io/badge/Maintained%3F-yes-green.svg></img><a/>
