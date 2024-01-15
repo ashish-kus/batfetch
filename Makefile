@@ -4,6 +4,7 @@ say_hello:
 
 install:
 	@echo "copying binary to /usr/local/bin.."
+	@mkdir -p /use/local/bin/
 	cp ./src/batfetch /usr/local/bin/
 
 uninstall:

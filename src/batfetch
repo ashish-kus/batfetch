@@ -332,7 +332,8 @@ main(){
     case "$1" in
       -v|--verbose)
         # Hide 'stderr' if the argument is '-v'
-        exec 2>/dev/null
+        # exec 2>/dev/null
+        LOG_VERBOSE=true
         ;;
       -j|--json)
         # Execute get_json function if the argument is '-j' or '--json'
@@ -343,6 +344,9 @@ main(){
     esac
     shift
   done
+
+  # Redirect stderr only if LOG_VERBOSE is true
+  $LOG_VERBOSE || exec 2>/dev/null
 
   set -f
   set +f ascii title model charge power state health  
