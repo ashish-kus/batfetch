@@ -106,7 +106,11 @@ load_config(){
 }
 
 
-
+# proctected CAT
+pcat(){
+  value=$(cat $1 2>/dev/null || echo " ")
+  echo $value
+}
 
 # This function gets the title of the current user and host and prints it out using the log function.
 get_title() {
@@ -125,17 +129,16 @@ get_title() {
       log "[3${BF_COL3:-1}m${user}${c8}@[3${BF_COL3:-1}m${hostname}" " "
     fi
 } 
-
 get_model(){
-  vandor=$(cat /sys/class/power_supply/BAT*/manufacturer)
-  model=$(cat /sys/class/power_supply/BAT*/model_name)
+  vandor=$(pcat /sys/class/power_supply/BAT*/manufacturer)
+  model=$(pcat /sys/class/power_supply/BAT*/model_name)
   log "model" "$vandor $model"
 }
 
 get_charge(){
-  charge="$(cat /sys/class/power_supply/BAT*/capacity)%"
-  Energy_now="$(cat /sys/class/power_supply/BAT*/energy_now)"
-  Draw="$(cat /sys/class/power_supply/BAT*/power_now)"
+  charge="$(pcat /sys/class/power_supply/BAT*/capacity)%"
+  Energy_now="$(pcat /sys/class/power_supply/BAT*/energy_now)"
+  Draw="$(pcat /sys/class/power_supply/BAT*/power_now)"
 
   if [ $Draw = 0 ]; then
       ESTIMATION="AC pluged "
@@ -150,14 +153,14 @@ get_charge(){
 }
 
 get_power(){
-  powerDraw="$(($(cat /sys/class/power_supply/BAT*/power_now)/1000000))W"
-  governer="$(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor)"
+  powerDraw="$(($(pcat /sys/class/power_supply/BAT*/power_now)/1000000))W"
+  governer="$(pcat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor)"
   log "power" "$powerDraw $governer"
 }
 
 get_state(){
   # online=$(${$(cat /sys/class/power_supply/AC*/online)}:- ${$(cat /sys/class/power_supply/AC*/state)})
-  online=$(cat /sys/class/power_supply/A*/online)
+  online=$(pcat /sys/class/power_supply/A*/online)
 # online= [ -f /sys/class/power_supply/AC*/online ] && cat /sys/class/power_supply/AC*/online \
 #         ||  [ -f /sys/class/power_supply/A*/state ] && cat next.txt
   if [[ $online -eq 1 ]]; then
@@ -165,24 +168,24 @@ get_state(){
   else
     powerInput="not connected"
   fi
-  status="$(cat /sys/class/power_supply/BAT*/status)"
+  status="$(pcat /sys/class/power_supply/BAT*/status)"
   log "state" "$powerInput & $status"
 }
 
 get_health(){
-   health=$(($(cat /sys/class/power_supply/BAT*/energy_full) * 100 / $(cat /sys/class/power_supply/BAT*/energy_full_design)))
+   health=$(($(pcat /sys/class/power_supply/BAT*/energy_full) * 100 / $(pcat /sys/class/power_supply/BAT*/energy_full_design)))
    cycle=$(cat /sys/class/power_supply/BAT*/cycle_count)
    log "health" "$health% |  cycles $cycle"
 }
 
 get_ascii(){
-  _charge=$(cat /sys/class/power_supply/BAT*/capacity) # This is the battery percentage
+  _charge=$(pcat /sys/class/power_supply/BAT*/capacity) # This is the battery percentage
   if [[ $_charge == 100 ]]; then
      var1="█   FULL  █"
   else
     var1="█   $_charge%   █"
   fi  
-  online=${online:-$(cat /sys/class/power_supply/A*/online)}
+  online=${online:-$(pcat /sys/class/power_supply/A*/online)}
     if [[ $online -eq 1 ]]; then
        var2=${var2:-"🗲"}
     else
