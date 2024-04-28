@@ -187,7 +187,7 @@ get_ascii(){
   fi  
   online=${online:-$(pcat /sys/class/power_supply/A*/online)}
     if [[ $online -eq 1 ]]; then
-       var2=${var2:-"🗲"}
+       var2=${var2:-"󱐌"}
     else
        var2=${var2:-" "}
     fi
