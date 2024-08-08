@@ -76,13 +76,18 @@ yay -S batfetch
 
 #### Nix os (via Flake)
 
-> [!NOTE]: This will run the command without installation of the tool.
+
+>[!NOTE]
+> This will run the command without installation of the tool.
+
 
 ```
 nix run github:ashish-kus/batfetch
 ```
 
-> [!NOTE:] Using flake to install in the system.
+>[!NOTE]
+> Using flake to install in the system.
+
 
 ```bash
 # flake input
