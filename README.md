@@ -33,6 +33,16 @@ batfetch -j
 batfetch --json
 ```
 
+#### Dynamic UI Output:
+
+To use the dynamic battery UI, use the -d or --dynamic flag.
+
+```
+batfetch -d
+# or
+batfetch --dynamic
+```
+
 Make sure to install jq for the JSON output functionality:
 
 ```
