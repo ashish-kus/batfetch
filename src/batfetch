@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 JSON_OUTPUT=false
+DYNAMIC_OUTPUT=false
 log(){
 
     # Do nothig if info field is empty.
@@ -179,6 +180,11 @@ get_health(){
 }
 
 get_ascii(){
+  if [[ $DYNAMIC_OUTPUT = true ]]; then
+    get_dynamic_ascii
+    return
+  fi
+
   _charge=$(pcat /sys/class/power_supply/BAT*/capacity) # This is the battery percentage
   if [[ $_charge == 100 ]]; then
      var1="█   FULL  █"
@@ -207,7 +213,46 @@ EOF
   # BF_COL1=${BF_COL1:-${1:-7}}
   # BF_COL3=${BF_COL2:-$((${1:-7}%8+1))}
 
-   printf '[m[%sA' "$ascii_height"
+    printf '[m[%sA' "$ascii_height"
+}
+
+get_dynamic_ascii() {
+  _charge=$(pcat /sys/class/power_supply/BAT*/capacity) # This is the battery percentage
+  ascii_width=11
+  ascii_height=7
+
+  # Calculating the number of filled lines based on battery percentage
+  filled_lines=$((ascii_height * _charge / 100))
+
+  # Creating the ASCii art
+  cat <<EOF
+🬭🬭🬭█████🬭🬭🬭
+EOF
+
+  # Print the filled part of the battery cell (starting from bottom and filling progressively upwards)
+  for ((i = 0; i < ascii_height; i++)); do
+    if ((i == 3)); then
+      if ((_charge == 100)); then
+        echo "█  FULL 󱐌 █"
+      elif ((_charge < 50)); then
+        # Print the percentage without extra "█" around it when the charge is less than 50%
+        echo "█   $_charge%   █"
+      else
+        echo "███ $_charge% ███"
+      fi
+    elif ((i < (ascii_height - filled_lines))); then
+      echo "█         █"
+    else
+      echo "███████████"
+    fi
+  done
+
+  # Printing the bottom part of the ASCii cell
+  cat <<EOF
+🮂🮂🮂🮂🮂🮂🮂🮂🮂🮂🮂
+EOF
+  printf '\033[%sA' "$ascii_height" # Move cursor up by ascii_height lines
+  printf '\033[%sC' "7"             # and lastly, align the heading to the center
 }
 
 # batfetch default config.
@@ -343,6 +388,9 @@ main(){
         JSON_OUTPUT=true
         get_json
         exit  # Exit after executing get_json
+        ;;
+      -d|--dynamic)
+        DYNAMIC_OUTPUT=true
         ;;
     esac
     shift
